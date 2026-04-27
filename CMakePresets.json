@@ -1,0 +1,66 @@
+{
+        "version": 3,
+        "configurePresets": [
+                {
+                        "name": "common",
+                        "hidden": true,
+                        "generator": "Unix Makefiles",
+                        "binaryDir": "${sourceDir}/build/",
+                        "toolchainFile": "${sourceDir}/cmake/gcc-arm-none-eabi.cmake",
+                        "environment": {
+                                "CPM_SOURCE_CACHE": "$env{HOME}/.cache/cpm"
+                        },
+                        "cacheVariables": {}
+                },
+                {
+                        "name": "debug-flash",
+                        "inherits": "common",
+                        "cacheVariables": {
+                                "CMAKE_BUILD_TYPE": "Debug",
+                                "MEMORY_LAYOUT": "FLASH"
+                        }
+                },
+                {
+                        "name": "debug-ram",
+                        "inherits": "common",
+                        "cacheVariables": {
+                                "CMAKE_BUILD_TYPE": "Debug",
+                                "MEMORY_LAYOUT": "RAM"
+                        }
+                },
+                {
+                        "name": "release-flash",
+                        "inherits": "common",
+                        "cacheVariables": {
+                                "CMAKE_BUILD_TYPE": "Release",
+                                "MEMORY_LAYOUT": "FLASH"
+                        }
+                },
+                {
+                        "name": "release-ram",
+                        "inherits": "common",
+                        "cacheVariables": {
+                                "CMAKE_BUILD_TYPE": "Release",
+                                "MEMORY_LAYOUT": "RAM"
+                        }
+                }
+        ],
+        "buildPresets": [
+                {
+                        "name": "debug-flash",
+                        "configurePreset": "debug-flash"
+                },
+                {
+                        "name": "debug-ram",
+                        "configurePreset": "debug-ram"
+                },
+                {
+                        "name": "release-flash",
+                        "configurePreset": "release-flash"
+                },
+                {
+                        "name": "release-ram",
+                        "configurePreset": "release-ram"
+                }
+        ]
+}
