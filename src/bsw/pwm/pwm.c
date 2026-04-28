@@ -53,6 +53,8 @@ void Pwm_Init(Pwm_ConfigType const* ConfigPtr)
             output_compare_config.Pulse = _ChannelConfigTable[ch_id].pulse_ticks;
             output_compare_config.OCPolarity = _ChannelConfigTable[ch_id].output_compare_polarity;
 
+            Pwm_Channel[ch_id] = _ChannelConfigTable[ch_id];
+
             if (HAL_TIM_PWM_ConfigChannel(&Pwm_HwRes[channel_hw_res_id], &output_compare_config, _ChannelConfigTable[ch_id].hw_id) != HAL_OK) {
                 Error_Handler();
             }
