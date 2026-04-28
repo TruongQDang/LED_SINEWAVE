@@ -9,9 +9,9 @@ volatile uint32_t Ind_C = 2 * PHASE;
 
 void LedEffect(void)
 {
-    Pwm_SetDutyCycle(&Pwm_PhaseAHandle, LedLut[Ind_A]);
-    Pwm_SetDutyCycle(&Pwm_PhaseBHandle, LedLut[Ind_B]);
-    Pwm_SetDutyCycle(&Pwm_PhaseCHandle, LedLut[Ind_C]);
+    Pwm_SetPulseTicks(PWM_PHASEA_CH, LedLut[Ind_A]);
+    Pwm_SetPulseTicks(PWM_PHASEB_CH, LedLut[Ind_B]);
+    Pwm_SetPulseTicks(PWM_PHASEC_CH, LedLut[Ind_C]);
 
     Ind_A = (Ind_A + 1) & (LED_LUT_COUNT - 1);
     Ind_B = (Ind_B + 1) & (LED_LUT_COUNT - 1);

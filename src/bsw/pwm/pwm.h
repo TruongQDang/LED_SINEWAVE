@@ -11,7 +11,7 @@
  *  GLOBAL FUNCTION PROTOTYPES
  *********************************************************************************************************************/
 void Pwm_Init(Pwm_ConfigType const* ConfigPtr);
-void Pwm_SetDutyCycle(Pwm_HandleConfigType const* PwmHandlePtr, uint32_t trigger_output_ticks);
+void Pwm_SetPulseTicks(Pwm_ChannelType ch, uint32_t pulse_ticks);
 
 #endif /* PWM_H */
 

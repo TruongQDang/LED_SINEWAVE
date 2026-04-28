@@ -9,16 +9,17 @@
 /**********************************************************************************************************************
  *  GLOBAL MACROS
  *********************************************************************************************************************/
-#define PWM_TIMER1_CHANNEL_CONFIG_COUNT (3)
-#define PWM_TIMER_CONFIG_COUNT (1)
+#define PWM_PHASEA_CH (PWM_CH0)
+#define PWM_PHASEB_CH (PWM_CH1)
+#define PWM_PHASEC_CH (PWM_CH2)
+
+#define PWM_USED_CH_COUNT (3)
+#define PWM_USED_HWRES_COUNT (1)
 
 /**********************************************************************************************************************
  *  EXTERNAL CONSTANTS
  *********************************************************************************************************************/
 extern Pwm_ConfigType const Pwm_Config;
-extern Pwm_HandleConfigType const Pwm_PhaseAHandle;
-extern Pwm_HandleConfigType const Pwm_PhaseBHandle;
-extern Pwm_HandleConfigType const Pwm_PhaseCHandle;
 
 #endif /* PWM_CFG_H */
 

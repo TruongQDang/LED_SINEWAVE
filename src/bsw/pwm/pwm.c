@@ -10,68 +10,69 @@
 /**********************************************************************************************************************
  *  PRIVATE DATA
  *********************************************************************************************************************/
-static TIM_HandleTypeDef Pwm_Timer[PWM_TIMER_CONFIG_COUNT];
+static TIM_HandleTypeDef Pwm_HwRes[PWM_USED_HWRES_COUNT];
+static Pwm_ChannelConfigType Pwm_Channel[PWM_USED_CH_COUNT];
 
 /**********************************************************************************************************************
  *  GLOBAL FUNCTION DEFINITIONS
  *********************************************************************************************************************/
 void Pwm_Init(Pwm_ConfigType const* ConfigPtr)
 {
-    Pwm_ChannelType ch;
-    Pwm_TimerType tim;
-    Pwm_TimerConfigType const* _TimerConfig;
-    Pwm_ChannelConfigType const* _ChannelConfig;
-    TIM_HandleTypeDef* _PwmTimer;
+    Pwm_ChannelType ch_id;
+    Pwm_HwResourceType hw_res_id;
+    Pwm_HwResourceType channel_hw_res_id;
+    Pwm_ChannelConfigType const* _ChannelConfigTable;
+    Pwm_HwResourceConfigType const* _HwResConfigTable;
     TIM_OC_InitTypeDef output_compare_config;
 
     if (ConfigPtr != NULL) {
-        for (tim = 0; tim < ConfigPtr->number_of_timers; tim++) {
-            _TimerConfig = &ConfigPtr->timer_config_ptr[tim];
-            _PwmTimer = &Pwm_Timer[tim];
+        for (hw_res_id = 0; hw_res_id < ConfigPtr->number_of_hw_res; hw_res_id++) {
+            _HwResConfigTable = ConfigPtr->hw_res_config_table;
 
-            _PwmTimer->Instance = (TIM_TypeDef*)_TimerConfig->base_address;
-            _PwmTimer->Init.Prescaler = _TimerConfig->prescaler;
-            _PwmTimer->Init.CounterMode = _TimerConfig->counter_mode;
-            _PwmTimer->Init.Period = _TimerConfig->period_ticks;
-            _PwmTimer->Init.AutoReloadPreload = _TimerConfig->period_buffer_enabled;
-            _PwmTimer->Init.RepetitionCounter = _TimerConfig->repetition_counter;
+            Pwm_HwRes[hw_res_id].Instance = (TIM_TypeDef*)_HwResConfigTable[hw_res_id].base_address;
+            Pwm_HwRes[hw_res_id].Init.Prescaler = _HwResConfigTable[hw_res_id].prescaler;
+            Pwm_HwRes[hw_res_id].Init.CounterMode = _HwResConfigTable[hw_res_id].counter_mode;
+            Pwm_HwRes[hw_res_id].Init.Period = _HwResConfigTable[hw_res_id].period_ticks;
+            Pwm_HwRes[hw_res_id].Init.AutoReloadPreload = _HwResConfigTable[hw_res_id].enable_period_tick_buffer;
+            Pwm_HwRes[hw_res_id].Init.RepetitionCounter = _HwResConfigTable[hw_res_id].repetition_counter;
 
-            if (HAL_TIM_Base_Init(_PwmTimer) != HAL_OK) {
+            if (HAL_TIM_Base_Init(&Pwm_HwRes[hw_res_id]) != HAL_OK) {
                 Error_Handler();
             }
 
-            if (HAL_TIM_PWM_Init(_PwmTimer) != HAL_OK) {
+            if (HAL_TIM_PWM_Init(&Pwm_HwRes[hw_res_id]) != HAL_OK) {
+                Error_Handler();
+            }
+        }
+
+        for (ch_id = 0; ch_id < ConfigPtr->numbers_of_channels; ch_id++) {
+            _ChannelConfigTable = ConfigPtr->channel_config_table;
+            channel_hw_res_id = _ChannelConfigTable[ch_id].hw_res_id;
+
+            output_compare_config.OCMode = _ChannelConfigTable[ch_id].output_compare_mode;
+            output_compare_config.Pulse = _ChannelConfigTable[ch_id].pulse_ticks;
+            output_compare_config.OCPolarity = _ChannelConfigTable[ch_id].output_compare_polarity;
+
+            if (HAL_TIM_PWM_ConfigChannel(&Pwm_HwRes[channel_hw_res_id], &output_compare_config, _ChannelConfigTable[ch_id].hw_id) != HAL_OK) {
                 Error_Handler();
             }
 
-            for (ch = 0; ch < _TimerConfig->number_of_channels; ch++) {
-                _ChannelConfig = &_TimerConfig->channel_config_ptr[ch];
+            HAL_TIM_PWM_Start(&Pwm_HwRes[channel_hw_res_id], _ChannelConfigTable[ch_id].hw_id);
+        }
 
-                output_compare_config.OCMode = _ChannelConfig->output_compare_mode;
-                output_compare_config.Pulse = _ChannelConfig->trigger_output_ticks;
-                output_compare_config.OCPolarity = _ChannelConfig->output_compare_polarity;
-
-                if (HAL_TIM_PWM_ConfigChannel(_PwmTimer, &output_compare_config, _ChannelConfig->channel_id) != HAL_OK) {
-                    Error_Handler();
-                }
-
-                HAL_TIM_PWM_Start(_PwmTimer, _ChannelConfig->channel_id);
-            }
-
-            HAL_TIM_Base_Start_IT(_PwmTimer);
+        for (hw_res_id = 0; hw_res_id < ConfigPtr->number_of_hw_res; hw_res_id++) {
+            HAL_TIM_Base_Start_IT(&Pwm_HwRes[hw_res_id]);
         }
     }
 }
 
-void Pwm_SetDutyCycle(Pwm_HandleConfigType const* PwmHandlePtr, uint32_t trigger_output_ticks)
+void Pwm_SetPulseTicks(Pwm_ChannelType ch, uint32_t pulse_ticks)
 {
-    Pwm_ChannelType ch_handle;
-    Pwm_TimerType tim_handle;
+    Pwm_HwResourceType hw_res_id;
 
-    ch_handle = PwmHandlePtr->channel_handle_id;
-    tim_handle = PwmHandlePtr->timer_handle_id;
+    hw_res_id = Pwm_Channel[ch].hw_res_id;
 
-    __HAL_TIM_SET_COMPARE(&Pwm_Timer[tim_handle], ch_handle, trigger_output_ticks);
+    __HAL_TIM_SET_COMPARE(&Pwm_HwRes[hw_res_id], ch, pulse_ticks);
 }
 
 /**********************************************************************************************************************
